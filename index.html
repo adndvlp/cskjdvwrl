@@ -275,13 +275,16 @@
 
   // Recuperar sessionId de localStorage o crear uno nuevo
   let trialSessionId = localStorage.getItem('jsPsych_currentSessionId');
+  let storedParticipantNumber = localStorage.getItem('jsPsych_participantNumber');
+  let isResuming = false;
+  
   if (!trialSessionId) {
     trialSessionId = "online_" + (crypto.randomUUID
       ? crypto.randomUUID()
       : Math.random().toString(36).slice(2, 10));
-    localStorage.setItem('jsPsych_currentSessionId', trialSessionId);
     console.log('🆕 [RESUME] Created NEW sessionId:', trialSessionId);
   } else {
+    isResuming = true;
     console.log('🔄 [RESUME] Loaded EXISTING sessionId from localStorage:', trialSessionId);
   }
 
@@ -367,8 +370,16 @@
       console.log('ℹ️ [RESUME] IndexedDB disabled. Resume check skipped.');
     }
     
-    // Crear sesión y obtener número de participante
-    participantNumber = await createSession();
+    // Crear sesión SOLO si es nueva (no estamos resumiendo)
+    if (isResuming && storedParticipantNumber !== null) {
+      participantNumber = parseInt(storedParticipantNumber, 10);
+      console.log('✅ [RESUME] Using stored participantNumber:', participantNumber);
+    } else {
+      participantNumber = await createSession();
+      // Guardar sessionId y participantNumber en localStorage para futuras retomas
+      localStorage.setItem('jsPsych_currentSessionId', trialSessionId);
+      localStorage.setItem('jsPsych_participantNumber', participantNumber.toString());
+    }
 
     if (typeof participantNumber !== "number" || isNaN(participantNumber)) {
       alert("The participant number is not assigned. Please, wait.");
@@ -793,6 +804,7 @@
         // Limpiar el localStorage de retoma ya que el experimento terminó correctamente
         localStorage.removeItem('jsPsych_resumeTrial');
         localStorage.removeItem('jsPsych_currentSessionId');
+        localStorage.removeItem('jsPsych_participantNumber');
         console.log('🧹 [RESUME] Cleared resume data - experiment completed');
 
         if (BATCH_CONFIG.useIndexedDB) {
