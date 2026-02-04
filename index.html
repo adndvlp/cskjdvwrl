@@ -280,6 +280,9 @@
       ? crypto.randomUUID()
       : Math.random().toString(36).slice(2, 10));
     localStorage.setItem('jsPsych_currentSessionId', trialSessionId);
+    console.log('🆕 [RESUME] Created NEW sessionId:', trialSessionId);
+  } else {
+    console.log('🔄 [RESUME] Loaded EXISTING sessionId from localStorage:', trialSessionId);
   }
 
   let participantNumber;
@@ -338,18 +341,30 @@
     let resumedSession = false;
     
     if (BATCH_CONFIG.useIndexedDB) {
+      console.log('🔍 [RESUME] Checking IndexedDB for existing trials...');
       const existingTrials = await TrialDB.getAll();
+      console.log('🔍 [RESUME] Found ' + existingTrials.length + ' trials in IndexedDB');
       
       if (existingTrials.length > 0) {
         const lastTrial = existingTrials[existingTrials.length - 1];
+        console.log('🔍 [RESUME] Last trial sessionId:', lastTrial.sessionId);
+        console.log('🔍 [RESUME] Current sessionId:', trialSessionId);
+        
         if (lastTrial.sessionId === trialSessionId) {
-          console.log(`Resuming session with ${existingTrials.length} existing trials`);
+          console.log('✅ [RESUME] Resuming session with ' + existingTrials.length + ' existing trials');
           BATCH_CONFIG.currentBatchNumber = Math.floor(existingTrials.length / (BATCH_CONFIG.size || 1));
           resumedSession = true;
         } else {
+          console.log('❌ [RESUME] SessionId mismatch. Clearing old trials from different session.');
+          console.log('   Old:', lastTrial.sessionId);
+          console.log('   New:', trialSessionId);
           await TrialDB.clear();
         }
+      } else {
+        console.log('ℹ️ [RESUME] No existing trials found. Starting fresh session.');
       }
+    } else {
+      console.log('ℹ️ [RESUME] IndexedDB disabled. Resume check skipped.');
     }
     
     // Crear sesión y obtener número de participante
@@ -632,11 +647,17 @@
 
     // Verificar si hay un trial guardado para retomar (de una sesión previa)
     const resumeTrialId = localStorage.getItem('jsPsych_resumeTrial');
+    console.log('🔍 [RESUME] Checking for resume trial ID in localStorage...');
+    console.log('🔍 [RESUME] resumeTrialId:', resumeTrialId);
+    
     if (resumeTrialId) {
-      console.log('🔄 [RESUME] Resuming experiment from trial:', resumeTrialId);
+      console.log('✅ [RESUME] Found resume point! Jumping to trial:', resumeTrialId);
       // Usar la misma lógica de jump pero con la key de retoma
       localStorage.setItem('jsPsych_jumpToTrial', resumeTrialId);
       localStorage.removeItem('jsPsych_resumeTrial');
+      console.log('✅ [RESUME] Set jsPsych_jumpToTrial to:', resumeTrialId);
+    } else {
+      console.log('ℹ️ [RESUME] No resume trial ID found. Starting from beginning.');
     }
 
     const jsPsych = initJsPsych({
