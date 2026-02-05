@@ -299,7 +299,7 @@
           experimentID: "4ca72429-5cbf-4837-b579-aebe0bf92f28",
           sessionId: trialSessionId,
           uid: Uid,
-          batchSize: 0
+          batchSize: 2
         }),
       });
       
@@ -330,7 +330,7 @@
     
     // --- Configuración de Batching (cargada desde Firestore) ---
     const BATCH_CONFIG = {
-      size: 0,
+      size: 2,
       currentBatchNumber: 0,
       resumeTimeoutMinutes: 30,
       useIndexedDB: true
