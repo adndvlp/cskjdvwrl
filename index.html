@@ -403,8 +403,8 @@
       sessionId: trialSessionId,
       participantNumber: participantNumber,
       startedAt: window.firebase.database.ServerValue.TIMESTAMP,
-      storage: 'osf',
-      storageProvider: 'osf',
+      storage: 'googledrive',
+      storageProvider: 'googledrive',
       state: resumedSession ? 'resumed' : 'initiated',
       lastUpdate: window.firebase.database.ServerValue.TIMESTAMP,
       metadata: metadata,
@@ -416,7 +416,7 @@
       connected: false,
       state: 'disconnected',
       disconnectedAt: window.firebase.database.ServerValue.TIMESTAMP,
-      storage: 'osf'
+      storage: 'googledrive'
     });
 
     // --- Branching logic functions (outside initJsPsych for timeline access) ---
@@ -576,7 +576,7 @@
           experimentID: "4ca72429-5cbf-4837-b579-aebe0bf92f28",
           sessionId: trialSessionId,
           data: concatenatedData,
-          storage: "osf",
+          storage: "googledrive",
         }),
       })
       .then(res => {
@@ -632,7 +632,7 @@
           experimentID: "4ca72429-5cbf-4837-b579-aebe0bf92f28",
           sessionId: trialSessionId,
           trialsData: trialsWithMetadata,
-          storage: "osf",
+          storage: "googledrive",
         }),
       })
       .then(res => {
@@ -1274,88 +1274,10 @@ response_components: jsPsych.timelineVariable("response_components"),
       
     },
     on_finish: function(data) {
-      // Evaluar repeat conditions (para reiniciar el experimento desde un trial específico)
-      const repeatConditionsArray = [{"id":1770250937030,"rules":[{"column":"","op":"==","value":"loca","fieldType":"response_components","componentIdx":"ButtonResponseComponent_1","prop":"response"}],"jumpToTrialId":"1770243151954"}];
-      
-      let shouldRepeat = false;
-      for (const condition of repeatConditionsArray) {
-        if (!condition || !condition.rules) {
-          continue;
-        }
-        
-        // Todas las reglas en una condición deben ser verdaderas (lógica AND)
-        const allRulesMatch = condition.rules.every(rule => {
-          // Construct column name if empty (for dynamic plugins)
-          let columnName = rule.column || "";
-          if (!columnName && rule.componentIdx && rule.prop) {
-            columnName = rule.componentIdx + '_' + rule.prop;
-          } else if (!columnName && rule.prop) {
-            columnName = rule.prop;
-          }
-          
-          // Get the property value using the column name
-          const propValue = data[columnName];
-          const compareValue = rule.value;
-          
-          // Handle array responses (multi-select questions)
-          if (Array.isArray(propValue)) {
-            // For array values, check if compareValue is included in the array
-            switch (rule.op) {
-              case '==':
-                return propValue.includes(compareValue);
-              case '!=':
-                return !propValue.includes(compareValue);
-              default:
-                return false; // Comparison operators don't make sense for arrays
-            }
-          }
-          
-          // Convertir valores para comparación (for non-array values)
-          const numPropValue = parseFloat(propValue);
-          const numCompareValue = parseFloat(compareValue);
-          const isNumeric = !isNaN(numPropValue) && !isNaN(numCompareValue);
-          
-          switch (rule.op) {
-            case '==':
-              return isNumeric ? numPropValue === numCompareValue : propValue == compareValue;
-            case '!=':
-              return isNumeric ? numPropValue !== numCompareValue : propValue != compareValue;
-            case '>':
-              return isNumeric && numPropValue > numCompareValue;
-            case '<':
-              return isNumeric && numPropValue < numCompareValue;
-            case '>=':
-              return isNumeric && numPropValue >= numCompareValue;
-            case '<=':
-              return isNumeric && numPropValue <= numCompareValue;
-            default:
-              return false;
-          }
-        });
-        
-        if (allRulesMatch && condition.jumpToTrialId) {
-          console.log('Repeat condition matched! Jumping to trial:', condition.jumpToTrialId);
-          // Guardar el trial objetivo en localStorage
-          localStorage.setItem('jsPsych_jumpToTrial', String(condition.jumpToTrialId));
-          shouldRepeat = true;
-          break;
-        }
+      // Trial terminal - si llegamos aquí después de branching, terminar el experimento
+      if (window.branchingActive) {
+        jsPsych.abortExperiment('', {});
       }
-      
-      if (shouldRepeat) {
-        // Limpiar el contenedor de jsPsych (jspsych-container es el display_element)
-        const container = document.getElementById('jspsych-container');
-        if (container) {
-          // Limpiar todo el contenido del container
-          container.innerHTML = '';
-        }
-        // Reiniciar el timeline
-        setTimeout(() => {
-          jsPsych.run(timeline);
-        }, 100);
-        return;
-      }
-      
     },};
     console.log("=== PROCEDURE SETUP New_Trial_2 ===");
     console.log("test_stimuli_New_Trial_2 before procedure:", test_stimuli_New_Trial_2);
