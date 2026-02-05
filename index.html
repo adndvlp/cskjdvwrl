@@ -698,14 +698,12 @@
           }).catch(err => console.error('Error updating state:', err));
         }
 
-        // 🔄 SISTEMA DE RETOMA: Guardar el trial_id del SIGUIENTE trial para retomar desde ahí
-        // Esto permite que si el participante abandona y regresa, continúe desde donde quedó
+        // 🔄 SISTEMA DE RETOMA: DEBUG - ver qué campos tiene data
+        console.log('📊 [DEBUG] All data fields:', JSON.stringify(data, null, 2));
+        
         if (data.trial_id !== undefined && data.trial_id !== null) {
-          // Guardar el trial_id actual + 1 como punto de retoma
-          // La lógica de conditional_function saltará todos los trials anteriores
-          const nextTrialId = data.trial_id;
-          localStorage.setItem('jsPsych_resumeTrial', String(nextTrialId));
-          console.log('💾 [RESUME] Progress saved. Next resume point: trial', nextTrialId);
+          localStorage.setItem('jsPsych_resumeTrial', String(data.trial_id));
+          console.log('💾 [RESUME] Saved trial_id:', data.trial_id);
         }
 
         if (BATCH_CONFIG.useIndexedDB) {
