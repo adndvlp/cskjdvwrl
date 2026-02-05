@@ -623,7 +623,8 @@
       }));
       
       // Enviar trials como JSON - el backend los convertirá a CSV
-      return fetch("https://us-central1-test-e4cf9.cloudfunctions.net/apiData/apiDataComplete", {
+      const apiBaseUrl = "https://us-central1-test-e4cf9.cloudfunctions.net/apiData".replace('/apiData', '');
+      return fetch(`${apiBaseUrl}/apiDataComplete`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "*/*" },
         body: JSON.stringify({
