@@ -401,8 +401,8 @@
       sessionId: trialSessionId,
       participantNumber: participantNumber,
       startedAt: window.firebase.database.ServerValue.TIMESTAMP,
-      storage: 'dropbox',
-      storageProvider: 'dropbox',
+      storage: 'osf',
+      storageProvider: 'osf',
       state: resumedSession ? 'resumed' : 'initiated',
       lastUpdate: window.firebase.database.ServerValue.TIMESTAMP,
       metadata: metadata,
@@ -414,7 +414,7 @@
       connected: false,
       state: 'disconnected',
       disconnectedAt: window.firebase.database.ServerValue.TIMESTAMP,
-      storage: 'dropbox'
+      storage: 'osf'
     });
 
     // --- Branching logic functions (outside initJsPsych for timeline access) ---
@@ -574,7 +574,7 @@
           experimentID: "4ca72429-5cbf-4837-b579-aebe0bf92f28",
           sessionId: trialSessionId,
           data: concatenatedData,
-          storage: "dropbox",
+          storage: "osf",
         }),
       })
       .then(res => {
@@ -631,7 +631,7 @@
           experimentID: "4ca72429-5cbf-4837-b579-aebe0bf92f28",
           sessionId: trialSessionId,
           trialsData: trialsWithMetadata,
-          storage: "dropbox",
+          storage: "osf",
         }),
       })
       .then(res => {
